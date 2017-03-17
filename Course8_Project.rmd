@@ -62,7 +62,7 @@ train<- train [, c(56, 1:55)]
 
 Do the following for test set too for later prediction purposes
 ```{r,  echo= TRUE}
-test <- test[,-c(1,2,5,6, 60)]
+test <- test[,-c(1,2,5,6)]
 ```
 
 Before building the model, I am going to subsample the dataset using training data set and later test with given test set.
@@ -117,10 +117,18 @@ Plot Fancy Rprt plot for the Model
 fancyRpartPlot(ModelFitRpart$finalModel)
 ```
 
-Do a prediction on the test model that was originally given in the assignment
+Do a prediction on the test model that was originally given in the assignment. I am doing it for Random Forest model
 
 ```{r,  echo= TRUE}
-pred2 <- predict(ModelFitRpart, test)
+pred2 <- predict(ModelFit, test)
+```
+
+```{r}
+predRsults <- data.frame(problem_id=test$problem_id, pred2=pred2)
+```
+
+```{r}
+predRsults
 ```
 
 For this analysis, overall dataset had 19622 obeservation. When the dataset was paritioned for prediction as test and rianing set, this test set had 11776 observations and tesing set had 7846. 
