@@ -1,0 +1,127 @@
+---
+title: "Course8 Project"
+author: "inajamo"
+date: "March 17, 2017"
+output: html_document
+---
+Call required libraries for this assignment
+
+```{r,  echo= TRUE}
+library(caret)
+library(kernlab)
+library(rpart)
+library(randomForest)
+library(rattle)
+library(rpart.plot)
+```
+
+Load data test and training data sets.
+Check working directory to make sure files are in correct folders. 
+
+Training data
+When reading data make sure to have the Spaces with NA values and canbe droped later. 
+
+```{r,  echo= TRUE}
+train <- read.csv("~/Desktop/Course8/pml-training.csv", na.strings=c("", "NA"))
+```
+
+As mentioned in the assignment, there are classes which are classe A,B, C, D and E
+According to the Human activity recognition website, these classes are sitting down, standing up, standing, walking, and sitting. 
+
+Remove all the columns that have 'NA'
+```{r,  echo= TRUE}
+train <- train[, colSums(is.na(train)) == 0] 
+```
+
+
+Read test data and do the same as training data.
+This data will be later used for testing purpoeses.
+```{r,  echo= TRUE}
+test <- read.csv("~/Desktop/Course8/pml-testing.csv", na.strings=c("", "NA"))
+```
+
+```{r,  echo= TRUE}
+test <- test[, colSums(is.na(test)) == 0]
+```
+
+Check the colnames that are necessary in the 
+```{r,  echo= TRUE}
+colnames(train)
+colnames(train)
+```
+
+Following columns are not required to perform an anlysis,
+```{r,  echo= TRUE}
+train <- train [,-c(1,2,5,6)]
+```
+
+Rearrange the dataframe
+```{r,  echo= TRUE}
+train<- train [, c(56, 1:55)]
+```
+
+Do the following for test set too for later prediction purposes
+```{r,  echo= TRUE}
+test <- test[,-c(1,2,5,6, 60)]
+```
+
+Before building the model, I am going to subsample the dataset using training data set and later test with given test set.
+
+```{r,  echo= TRUE}
+set.seed(6554)
+```
+
+Partition data 
+```{r,  echo= TRUE}
+inTrain <- createDataPartition(y=train$classe, p = 0.6, list = FALSE)
+```
+
+Create Training and Testing sets
+```{r,  echo= TRUE}
+Training <- train[inTrain,]
+Testing <- train[-inTrain,]
+```
+
+Fit a random forest model 
+```{r,  echo= TRUE}
+ModelFit <- randomForest(classe ~ . , data = Training, prox = TRUE)
+```
+
+Next, conduct the prediciton using the testing set
+```{r,  echo= TRUE}
+pred <- predict(ModelFit, Testing)
+```
+
+```{r,  echo= TRUE}
+confusionMatrix(pred, Testing$classe)
+```
+
+Next can try a 'rpart' model and then check with FancyRPartplot
+
+```{r,  echo= TRUE}
+ModelFitRpart <- train(classe ~., data = Training, method = "rpart")
+```
+
+```{r,  echo= TRUE}
+ModelFitRpart$finalModel
+```
+
+Test model performance with test data set
+```{r,  echo= TRUE}
+pred1 <- predict(ModelFitRpart, Testing)
+confusionMatrix(pred1, Testing$classe)
+```
+
+Plot Fancy Rprt plot for the Model
+```{r, echo=TRUE}
+fancyRpartPlot(ModelFitRpart$finalModel)
+```
+
+Do a prediction on the test model that was originally given in the assignment
+
+```{r,  echo= TRUE}
+pred2 <- predict(ModelFitRpart, test)
+```
+
+For this analysis, overall dataset had 19622 obeservation. When the dataset was paritioned for prediction as test and rianing set, this test set had 11776 observations and tesing set had 7846. 
+There were types of models were built, which are 'random forest' and 'rpart', which has classification and regression trees. The model with random forest had a 99 percent accuracy that was balanced throughout all the factors in the classe variable. Rpart had an accuracy of almost 60 percent. This shows that for this dataset, rnadom forest model perfoms well outcome varible is categorical and gives a great accuracy. On the other hand, rgression and classification (rpart) model does peform well. 
